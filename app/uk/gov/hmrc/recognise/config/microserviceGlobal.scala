@@ -24,9 +24,6 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.Play.current
-import uk.gov.hmrc.api.config.{ServiceLocatorConfig, ServiceLocatorRegistration}
-import uk.gov.hmrc.api.connector.ServiceLocatorConnector
-import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
@@ -66,7 +63,7 @@ object MicroserviceAuthFilter extends AuthorisationFilter with MicroserviceFilte
   override def controllerNeedsAuth(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuth
 }
 
-object MicroserviceGlobal extends DefaultMicroserviceGlobal with RunMode with ServiceLocatorConfig with ServiceLocatorRegistration {
+object MicroserviceGlobal extends DefaultMicroserviceGlobal with RunMode { //with ServiceLocatorConfig with ServiceLocatorRegistration {
   override val auditConnector = MicroserviceAuditConnector
 
   override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = app.configuration.getConfig(s"microservice.metrics")
@@ -77,28 +74,28 @@ object MicroserviceGlobal extends DefaultMicroserviceGlobal with RunMode with Se
 
   override val authFilter = Some(MicroserviceAuthFilter)
 
-  override val slConnector: ServiceLocatorConnector = ServiceLocatorConnector(WSHttp)
+//  override val slConnector: ServiceLocatorConnector = ServiceLocatorConnector(WSHttp)
 
-  override implicit val hc: HeaderCarrier = HeaderCarrier()
+//  override implicit val hc: HeaderCarrier = HeaderCarrier()
 
   override def microserviceFilters: Seq[EssentialFilter] = Seq.empty
 
-  override def onError(request: RequestHeader, ex: Throwable): Future[Result] = {
-    super.onError(request, ex) map (res => {
-      res.header.status
-      match {
-        case 401 => Status(ErrorUnauthorized.httpStatusCode)(Json.toJson(ErrorUnauthorized))
-        case _ => Status(ErrorInternalServerError.httpStatusCode)(Json.toJson(ErrorInternalServerError))
-      }
-    })
-  }
+//  override def onError(request: RequestHeader, ex: Throwable): Future[Result] = {
+//    super.onError(request, ex) map (res => {
+//      res.header.status
+//      match {
+//        case 401 => Status(ErrorUnauthorized.httpStatusCode)(Json.toJson(ErrorUnauthorized))
+//        case _ => Status(ErrorInternalServerError.httpStatusCode)(Json.toJson(ErrorInternalServerError))
+//      }
+//    })
+//  }
+//
+//  override def onBadRequest(request: RequestHeader, error: String): Future[Result] = {
+//    val errorScenario = error match {
+//      case _ => ErrorGenericBadRequest(error)
+//    }
+//    Future.successful(Status(errorScenario.httpStatusCode)(Json.toJson(errorScenario)))
+//  }
 
-  override def onBadRequest(request: RequestHeader, error: String): Future[Result] = {
-    val errorScenario = error match {
-      case _ => ErrorGenericBadRequest(error)
-    }
-    Future.successful(Status(errorScenario.httpStatusCode)(Json.toJson(errorScenario)))
-  }
-
-  override def onHandlerNotFound(request: RequestHeader): Future[Result] = Future.successful(NotFound(Json.toJson(ErrorNotFound)))
+//  override def onHandlerNotFound(request: RequestHeader): Future[Result] = Future.successful(NotFound(Json.toJson(ErrorNotFound)))
 }
