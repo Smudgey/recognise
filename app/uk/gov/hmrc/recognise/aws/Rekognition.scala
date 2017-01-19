@@ -16,13 +16,6 @@
 
 package uk.gov.hmrc.recognise.aws
 
-
-
-
-
-
-
-
 trait Rekognition {
 
   import com.amazonaws.services.rekognition.AmazonRekognitionClient
@@ -47,9 +40,16 @@ trait Rekognition {
   }
 }
 
-object Rekognition extends Rekognition {
+object Rekognition extends Rekognition with ImageBucket with ImageStream {
+
+  import java.io.File
+  import com.amazonaws.services.rekognition.model.Image
+
+  override val defaultRegion: String = Aws.defaultRegion
 
   override val serviceEndpoint: String = Aws.baseUrl("rekognition")
 
   override val faceSimilarityThreshold: Int = Aws.getConfInt("aws.rekognition.thresholds.faceComparison.confidence")
+
+  implicit def toByteBuffer(file : File) : Image = byteBuffer(file)
 }

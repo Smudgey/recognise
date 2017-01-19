@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.recognise.aws
 
+import scala.util.{Failure, Success}
+
 
 trait Aws {
 
@@ -29,9 +31,10 @@ trait Aws {
   val defaultRegion : String
 
   lazy val credentials: AWSCredentials =
-    Try(new ProfileCredentialsProvider(profileName).getCredentials)
-      .getOrElse(throw new RuntimeException(s"Failed to find the credentials for the profile : '$profileName'"))
-
+    Try(new ProfileCredentialsProvider(profileName).getCredentials) match {
+      case Success(credential) => credential
+      case Failure(t) => throw new RuntimeException(s"Failed to find the credentials for the profile : '$profileName'", t)
+    }
 }
 
 object Aws extends Aws {
@@ -49,7 +52,7 @@ object Aws extends Aws {
     val protocol = getConfString(s"aws.$serviceName.protocol", throw new RuntimeException(s"Could not find config aws.$serviceName.protocol"))
     val host = getConfString(s"aws.$serviceName.service", throw new RuntimeException(s"Could not find config aws.$serviceName.service"))
     val awsRegion = region(serviceName)
-    s"$protocol://$host:$awsRegion.amazonaws.com"
+    s"$protocol://$host.$awsRegion.amazonaws.com"
   }
 
   private def region(serviceName: String) : String =
@@ -57,10 +60,10 @@ object Aws extends Aws {
         .getOrElse(maybeDefaultRegion
           .getOrElse(throw new RuntimeException(s"Could not find config aws.$serviceName.region")))
 
-  def getConfString(confKey: String, defString: => String): String = Play.configuration.getString("confKey").getOrElse(defString)
+  def getConfString(confKey: String, defString: => String): String = Play.configuration.getString(confKey).getOrElse(defString)
 
   def getConfInt(confKey: String): Int = getConfInt(confKey, throw new RuntimeException(s"Could not find config aws.$confKey"))
 
-  def getConfInt(confKey: String, defInt: => Int): Int = Play.configuration.getInt(s"aws.$confKey").getOrElse(defInt)
+  def getConfInt(confKey: String, defInt: => Int): Int = Play.configuration.getInt(confKey).getOrElse(defInt)
 }
 

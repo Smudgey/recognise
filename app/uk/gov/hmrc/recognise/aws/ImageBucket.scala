@@ -16,6 +16,11 @@
 
 package uk.gov.hmrc.recognise.aws
 
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+
+import com.amazonaws.util.IOUtils
+
 import scala.util.Try
 
 trait AwsS3 {
@@ -46,12 +51,11 @@ trait AwsS3 {
   }
 }
 
-trait S3ImageBucket extends AwsS3 {
+trait ImageBucket extends AwsS3 {
 
   import com.amazonaws.services.rekognition.model.{Image, S3Object}
 
-  def getImage(imageName: String, bucketName: String) = {
-    createBucket(bucketName)
+  def getImage(imageName: String, bucketName: String) : Image = {
     new Image()
       .withS3Object(new S3Object()
         .withBucket(bucketName)
@@ -59,6 +63,11 @@ trait S3ImageBucket extends AwsS3 {
   }
 }
 
-object S3ImageBucket extends S3ImageBucket {
-  override val defaultRegion: String = Aws.defaultRegion
+trait ImageStream {
+
+  import java.io.File
+
+  import com.amazonaws.services.rekognition.model.Image
+
+  def byteBuffer(image : File) : Image = new Image().withBytes(ByteBuffer.wrap(IOUtils.toByteArray(new FileInputStream(image))))
 }
