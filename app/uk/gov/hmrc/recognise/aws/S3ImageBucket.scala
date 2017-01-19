@@ -16,13 +16,42 @@
 
 package uk.gov.hmrc.recognise.aws
 
-trait S3ImageBucket {
+import scala.util.Try
+
+trait AwsS3 {
+
+  import com.amazonaws.regions.{Region, Regions}
+  import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client}
+  import play.api.Logger
+
+  val defaultRegion: String
+
+  def s3Client(region: String = defaultRegion): AmazonS3 = {
+    val s3 = new AmazonS3Client(Aws.credentials)
+    s3.setRegion(Region.getRegion(Regions.fromName(region)))
+    s3
+  }
+
+  def createBucket(name: String): Try[String] = {
+    Try {
+      val s3 = s3Client()
+      if (!s3.doesBucketExist(name)) {
+        Logger.debug(s"Creating bucket with $name")
+        s3.createBucket(name)
+      }
+      val location = s3.getBucketLocation(name)
+      Logger.debug(s"Bucket created at location : $location")
+      location
+    }
+  }
+}
+
+trait S3ImageBucket extends AwsS3 {
 
   import com.amazonaws.services.rekognition.model.{Image, S3Object}
 
-  val bucketName: String
-
-  def getImage(imageName: String) = {
+  def getImage(imageName: String, bucketName: String) = {
+    createBucket(bucketName)
     new Image()
       .withS3Object(new S3Object()
         .withBucket(bucketName)
@@ -31,5 +60,5 @@ trait S3ImageBucket {
 }
 
 object S3ImageBucket extends S3ImageBucket {
-  override val bucketName: String = ???
+  override val defaultRegion: String = Aws.defaultRegion
 }
