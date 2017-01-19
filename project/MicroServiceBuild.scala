@@ -29,7 +29,6 @@ private object AppDependencies {
   private val playUrlBindersVersion = "2.0.0"
   private val playConfigVersion = "3.0.0"
   private val domainVersion = "4.0.0"
-  private val playHmrcApiVersion = "1.2.0"
 
   private val scalaTestVersion = "3.0.1"
   private val pegdownVersion = "1.6.0"
@@ -46,7 +45,6 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-config" % playConfigVersion,
     "uk.gov.hmrc" %% "play-json-logger" % playJsonLoggerVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
-    "uk.gov.hmrc" %% "play-hmrc-api" % playHmrcApiVersion,
 
     "com.amazonaws" % "aws-java-sdk-rekognition" % awsSdk,
     "com.amazonaws" % "aws-java-sdk-s3" % awsSdk
